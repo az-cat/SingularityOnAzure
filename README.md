@@ -4,8 +4,6 @@
 
 Singularity is a container model better suited to HPC.  This has been tested on an H16r VM running the CentOS 7.1 HPC image in the Azure marketplace.
 
-This has been run with CentOS 7.1 and 7.4 HPC images from the Azure marketplace.
-
 ## Install Singularity
 
 There is no singularity package available in the CentOS repository and so it must be built from source.
