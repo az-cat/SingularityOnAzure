@@ -4,6 +4,8 @@
 
 Singularity is a container model better suited to HPC.  This has been tested on an H16r VM running the CentOS 7.1 HPC image in the Azure marketplace.
 
+This has been run with CentOS 7.1 and 7.4 HPC images from the Azure marketplace.
+
 ## Install Singularity
 
 There is no singularity package available in the CentOS repository and so it must be built from source.
@@ -64,7 +66,8 @@ Singularity containers can be run directly with mpirun.  The container that has 
         -genv I_MPI_DYNAMIC_CONNECTION 0 -genv I_MPI_DAPL_TRANSLATION_CACHE 0 \
         ./centos7.simg /opt/intel/impi/5.1.3.223/bin64/IMB-MPI1 PingPong
 
-Notes:
+Comments on the MPI options:
+
 - I_MPI_FALLBACK=0 makes sure that the specified fabric is used and will not fallback to anything else (i.e. TCP)
 - I_MPI_DEBUG=6 provides verbose information from MPI – useful when diagnosing issues.
 - I_MPI_DAPL_PROVIDER, I_MPI_FABRICS and I_MPI_DYNAMIC_CONNECTION settings are both required when using Infiniband on Azure 
