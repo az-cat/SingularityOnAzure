@@ -47,8 +47,11 @@ This is the centos definition file used:
     rm /opt/dat.conf
 
 The rdma config file is also used from the host VM in this definition file.  The HPC image has an updated version of “dat.conf” to the version in the “rdma” package.
+
 The image required root user to build:
-sudo singularity build centos7.simg centos.def
+
+    sudo singularity build centos7.simg centos.def
+
 This creates the “centos7.simg” Singularity image.
 
 ## Testing MPI on the image
