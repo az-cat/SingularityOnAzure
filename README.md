@@ -74,23 +74,21 @@ Singularity containers can be run directly with mpirun.  The container that has 
 
 ## Singularity and Cyclecloud
 
-To use Singularity on a Cyclecloud SGE cluster, a jobscript is needed. The following script can be submitted with: qsub -pe mpi 32 rdma.job 
+To use Singularity on a Cyclecloud SGE cluster, a jobscript is needed. The following script can be submitted with: `qsub -pe mpi 32 rdma.job` 
      
      #!/bin/bash
 
      # prepare machine file for mpi
      cat "$TMPDIR/machines"
      cat "$PE_HOSTFILE"
-     for i in `seq 1 $PPN`;
-     do
-       uniq $TMPDIR/machines >> $TMPDIR/u_machines
-     done
-
+     uniq $TMPDIR/machines > $TMPDIR/u_machines
+     
      source /opt/intel/impi/5.1.3.223/bin64/mpivars.sh
      export PATH=/shared/bin/singularity/bin:$PATH
      export SINGULARITY_BINDPATH=/etc/rdma/dat.conf
      
-     mpirun -machinefile "$TMPDIR/u_machines" -np 2 -ppn 1 ./centos7.simg \ /opt/intel/impi/5.1.3.223/bin64/IMB-MPI1 PingPong
+     mpirun -f "$TMPDIR/u_machines" -np 2 -ppn 1 \
+         ./centos7.simg /opt/intel/impi/5.1.3.223/bin64/IMB-MPI1 PingPong
 
 
 Comments on the MPI options:
