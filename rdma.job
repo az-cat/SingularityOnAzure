@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# prepare machine file for mpi
+cat "$TMPDIR/machines"
+cat "$PE_HOSTFILE"
+for i in `seq 1 $PPN`;
+do
+  uniq $TMPDIR/machines >> $TMPDIR/u_machines
+done
+
+source /opt/intel/impi/5.1.3.223/bin64/mpivars.sh
+export PATH=/shared/bin/singularity/bin:$PATH
+export SINGULARITY_BINDPATH=/etc/rdma/dat.conf
+     
+mpirun -machinefile "$TMPDIR/u_machines" -np 2 -ppn 1 ./centos7.simg \ /opt/intel/impi/5.1.3.223/bin64/IMB-MPI1 PingPong
+
+

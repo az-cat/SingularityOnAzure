@@ -1,0 +1,26 @@
+Bootstrap: yum
+OSVersion: 7
+MirrorURL: http://mirror.centos.org/centos-%{OSVERSION}/%{OSVERSION}/os/$basearch/
+Include: yum
+
+%runscript
+source /opt/intel/impi/5.1.3.223/bin64/mpivars.sh
+exec "$@"
+
+%files
+intel.tgz /opt/intel.tgz
+
+%environment
+export I_MPI_FALLBACK=0
+export I_MPI_FABRICS=shm:dapl
+export I_MPI_DAPL_PROVIDER=ofa-v2-ib0
+export I_MPI_DYNAMIC_CONNECTION=0
+export I_MPI_DAPL_TRANSLATION_CACHE=0
+
+%post
+yum install -y tar gzip libmlx4 librdmacm libibverbs dapl rdma net-tools numactl
+cd /opt
+tar zxf intel.tgz
+rm -rf intel.tgz
+mkdir -p /etc/rdma
+touch /etc/rdma/dat.conf

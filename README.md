@@ -8,14 +8,15 @@ Singularity is a container model better suited to HPC.  This has been tested on 
 
 There is no singularity package available in the CentOS repository and so it must be built from source.
 
+    sudo yum -y install git nss curl libcurl libtool automake libarchive-devel squashfs-tools
     git clone https://github.com/singularityware/singularity.git
     cd singularity
     ./autogen.sh
-    ./configure --prefix=/usr/local
+    ./configure --prefix=/shared/bin/singularity
     make
     sudo make install
 
-Full details can be found on the Singularity site https://singularity.lbl.gov/install-linux.
+Full details can be found on the Singularity site https://www.sylabs.io/docs/.
 
 ## Build an HPC container from a definition file
 
@@ -37,19 +38,27 @@ This is the centos definition file used:
 
     %files
     intel.tgz /opt/intel.tgz
-    /etc/rdma/dat.conf /opt/dat.conf
+
+    %environment
+    export I_MPI_FALLBACK=0
+    export I_MPI_FABRICS=shm:dapl
+    export I_MPI_DAPL_PROVIDER=ofa-v2-ib0
+    export I_MPI_DYNAMIC_CONNECTION=0
+    export I_MPI_DAPL_TRANSLATION_CACHE=0
 
     %post
     yum install -y tar gzip libmlx4 librdmacm libibverbs dapl rdma net-tools numactl
     cd /opt
     tar zxf intel.tgz
-    cp /opt/dat.conf /etc/rdma/dat.conf
-    rm /opt/dat.conf
+    rm -rf intel.tgz
+    mkdir -p /etc/rdma
+    touch /etc/rdma/dat.conf
 
-The rdma config file is also used from the host VM in this definition file.  The HPC image has an updated version of “dat.conf” to the version in the “rdma” package.
+The HPC image has an updated and node-specific version of “dat.conf” to the version in the “rdma” package. To make sure the correct version is used, the dat.conf will be used from the host node using a bindpath.
 
 The image required root user to build:
 
+    export PATH=/shared/bin/singularity/bin:$PATH
     sudo singularity build centos7.simg centos.def
 
 This creates the “centos7.simg” Singularity image.
@@ -57,12 +66,32 @@ This creates the “centos7.simg” Singularity image.
 ## Testing MPI on the image
 
 Singularity containers can be run directly with mpirun.  The container that has been created is setup to execute the application specified in the first parameter.  We can test that the Infiniband is working with the following command: 
-    
+
+    export SINGULARITY_BINDPATH=/etc/rdma/dat.conf    
     mpirun -np 2 \
-        -genv I_MPI_DEBUG 6 -genv I_MPI_FALLBACK 0 \
-        -genv I_MPI_FABRICS dapl -genv I_MPI_DAPL_PROVIDER ofa-v2-ib0 \
-        -genv I_MPI_DYNAMIC_CONNECTION 0 -genv I_MPI_DAPL_TRANSLATION_CACHE 0 \
         ./centos7.simg /opt/intel/impi/5.1.3.223/bin64/IMB-MPI1 PingPong
+
+
+## Singularity and Cyclecloud
+
+To use Singularity on a Cyclecloud SGE cluster, a jobscript is needed. The following script can be submitted with: qsub -pe mpi 32 rdma.job 
+     
+     #!/bin/bash
+
+     # prepare machine file for mpi
+     cat "$TMPDIR/machines"
+     cat "$PE_HOSTFILE"
+     for i in `seq 1 $PPN`;
+     do
+       uniq $TMPDIR/machines >> $TMPDIR/u_machines
+     done
+
+     source /opt/intel/impi/5.1.3.223/bin64/mpivars.sh
+     export PATH=/shared/bin/singularity/bin:$PATH
+     export SINGULARITY_BINDPATH=/etc/rdma/dat.conf
+     
+     mpirun -machinefile "$TMPDIR/u_machines" -np 2 -ppn 1 ./centos7.simg \ /opt/intel/impi/5.1.3.223/bin64/IMB-MPI1 PingPong
+
 
 Comments on the MPI options:
 
