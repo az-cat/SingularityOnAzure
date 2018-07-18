@@ -107,7 +107,7 @@ To use Singularity on a Cyclecloud SGE cluster, a jobscript is needed. The follo
     export PATH=/shared/bin/singularity/bin:$PATH
     export SINGULARITY_BINDPATH=/etc/rdma/dat.conf
      
-    mpirun -machinefile "$TMPDIR/u_machines" -np 2 -ppn 1 singularity exec ./rdma-latest.simg \ /opt/intel/impi/5.1.3.223/bin64/IMB-MPI1 PingPong
+    mpirun -machinefile "$TMPDIR/u_machines" -np 2 -ppn 1 singularity exec ./rdma-latest.simg /opt/intel/impi/5.1.3.223/bin64/IMB-MPI1 PingPong
 
 
 Comments on the MPI options:
