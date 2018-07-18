@@ -36,8 +36,13 @@ Docker is not yet provided directly through CentOS or EPEL; therefor the Docker 
 To create the registry and login for Docker, the az-cli is required. Use this page to install: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-yum?view=azure-cli-latest.
 Creating a container registry is a recent feature that can be done from the az command line:
 
+    az login
     az acr create --resource-group <my_RG> --name <my_acr_name> \
         --sku Basic --admin-enabled true
+
+Since all Docker commands have to be run as sudo, also this sudo environment needs to login and the az commands need te be run like that:
+
+    sudo az login
     sudo az acr login --name <my_acr_name>
     sudo az acr show --name <my_acr_name> --query loginServer --output table
 
@@ -59,7 +64,7 @@ This is the Dockerfile definition file used:
     ENV LD_LIBRARY_PATH /opt/intel/compilers_and_libraries_2016.3.223/linux/mpi/intel64/lib/
     ENTRYPOINT ["exec", "\"$@\""]
 
-All Docker required root user to build:
+All Docker commands require root user to use, so building the container goes like this:
 
     sudo docker build -t rdma .
 
