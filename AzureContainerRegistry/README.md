@@ -28,11 +28,12 @@ Docker is not yet provided directly through CentOS or EPEL; therefor the Docker 
 
     sudo yum install -y yum-utils device-mapper-persistent-data lvm2
     sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-    sudo yum install docker-ce
+    sudo yum install -y docker-ce
     sudo systemctl start docker
 
 ## Create an Azure Container Registry
 
+To create the registry and login for Docker, the az-cli is required. Use this page to install: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-yum?view=azure-cli-latest.
 Creating a container registry is a recent feature that can be done from the az command line:
 
     az acr create --resource-group <my_RG> --name <my_acr_name> \
@@ -47,7 +48,6 @@ The container requires Intel MPI to be installed.  The installation is taken fro
     mkdir rdma
     cd /opt
     tar zcvf ~/rdma/intel.tgz intel
-    cp /etc/rdma/dat.conf ~/rdma/
     cd ~/rdma
 
 This is the Dockerfile definition file used:
@@ -55,14 +55,10 @@ This is the Dockerfile definition file used:
     FROM centos:7
     WORKDIR /app
     ADD intel.tgz /opt/
-    ADD dat.conf /opt/
-    RUN yum install -y tar gzip libmlx4 librdmacm libibverbs dapl rdma net-tools
-      numactl && \
-      cp /opt/dat.conf /etc/rdma/dat.conf
-    ENV LD_LIBRARY_PATH \ /opt/intel/compilers_and_libraries_2016.3.223/linux/mpi/intel64/lib/
+    RUN yum install -y tar gzip libmlx4 librdmacm libibverbs dapl rdma net-tools numactl
+    ENV LD_LIBRARY_PATH /opt/intel/compilers_and_libraries_2016.3.223/linux/mpi/intel64/lib/
     ENTRYPOINT ["exec", "\"$@\""]
 
-The rdma config file is also used from the host VM in this definition file.  The HPC image has an updated version of “dat.conf” to the version in the “rdma” package.
 All Docker required root user to build:
 
     sudo docker build -t rdma .
@@ -87,7 +83,7 @@ With these keys the Singularity container can be built:
 
     singularity pull docker://<my_acr_name>.azurecr.io/rdma:latest
 
-This creates the “rdma.simg” Singularity image.
+This creates the “rdma-latest.simg” Singularity image.
 
 
 ## Singularity and Cyclecloud
@@ -106,7 +102,7 @@ To use Singularity on a Cyclecloud SGE cluster, a jobscript is needed. The follo
     export PATH=/shared/bin/singularity/bin:$PATH
     export SINGULARITY_BINDPATH=/etc/rdma/dat.conf
      
-    mpirun -machinefile "$TMPDIR/u_machines" -np 2 -ppn 1 ./centos7.simg \ /opt/intel/impi/5.1.3.223/bin64/IMB-MPI1 PingPong
+    mpirun -machinefile "$TMPDIR/u_machines" -np 2 -ppn 1 singularity exec ./rdma-latest.simg \ /opt/intel/impi/5.1.3.223/bin64/IMB-MPI1 PingPong
 
 
 Comments on the MPI options:
