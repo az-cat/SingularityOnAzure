@@ -83,6 +83,7 @@ Now we can access the uploaded Docker image from Singularity and build a Singula
 
     export SINGULARITY_DOCKER_USERNAME=<my_acr_name>
     export SINGULARITY_DOCKER_PASSWORD=<my_acr_password>
+    export PATH=/shared/bin/singularity/bin:$PATH
 
 With these keys the Singularity container can be built:
 
@@ -90,6 +91,7 @@ With these keys the Singularity container can be built:
 
 This creates the “rdma-latest.simg” Singularity image.
 
+To improve security, a dedicates ServicePrincipal can be created with only read rights to the ContainerRegistry. In that case, use the application_id for the USERNAME and the application_secret for the PASSWORD. 
 
 ## Singularity and Cyclecloud
 
