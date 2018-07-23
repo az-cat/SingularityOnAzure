@@ -8,13 +8,19 @@ This has been tested on H16r VMs running the CentOS 7.1 HPC image in the Azure m
 
 ## Install Singularity with OAUTH2 token patch
 
-There is no singularity package available in the CentOS repository and so it must be built from source. Singularity does not support OAUTH2 tokens as implemented with ACR, and thus requires an additional patch. This patch is provided by https://github.com/hakonenger.
+There is no singularity package available in the CentOS repository and so it must be built from source. Singularity does not support OAUTH2 tokens as implemented with ACR, and thus requires an additional patch. This patch is provided by https://github.com/hakonenger. This patch has now been merged in the development-2.x branch of Singularity.
 
     sudo yum -y install git nss curl libcurl libtool automake libarchive-devel squashfs-tools
     git clone https://github.com/singularityware/singularity.git
     cd singularity
+
+for using the development branch (patch has been merged)
+    git checkout development-2.x
+
+for using the plain patch
     wget https://github.com/singularityware/singularity/files/2076307/oauth2-token-patch.txt
     patch -i oauth2-token-patch.txt libexec/python/docker/api.py
+
     ./autogen.sh
     ./configure --prefix=/shared/bin/singularity
     make
