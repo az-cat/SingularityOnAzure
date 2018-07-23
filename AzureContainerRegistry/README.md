@@ -15,9 +15,11 @@ There is no singularity package available in the CentOS repository and so it mus
     cd singularity
 
 for using the development branch (patch has been merged)
+
     git checkout development-2.x
 
 for using the plain patch
+
     wget https://github.com/singularityware/singularity/files/2076307/oauth2-token-patch.txt
     patch -i oauth2-token-patch.txt libexec/python/docker/api.py
 
