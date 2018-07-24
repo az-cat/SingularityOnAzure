@@ -8,13 +8,21 @@ This has been tested on H16r VMs running the CentOS 7.1 HPC image in the Azure m
 
 ## Install Singularity with OAUTH2 token patch
 
-There is no singularity package available in the CentOS repository and so it must be built from source. Singularity does not support OAUTH2 tokens as implemented with ACR, and thus requires an additional patch. This patch is provided by https://github.com/hakonenger.
+There is no singularity package available in the CentOS repository and so it must be built from source. Singularity does not support OAUTH2 tokens as implemented with ACR, and thus requires an additional patch. This patch is provided by https://github.com/hakonenger. This patch has now been merged in the development-2.x branch of Singularity.
 
     sudo yum -y install git nss curl libcurl libtool automake libarchive-devel squashfs-tools
     git clone https://github.com/singularityware/singularity.git
     cd singularity
+
+for using the development branch (patch has been merged)
+
+    git checkout development-2.x
+
+for using the plain patch
+
     wget https://github.com/singularityware/singularity/files/2076307/oauth2-token-patch.txt
     patch -i oauth2-token-patch.txt libexec/python/docker/api.py
+
     ./autogen.sh
     ./configure --prefix=/shared/bin/singularity
     make
@@ -83,6 +91,7 @@ Now we can access the uploaded Docker image from Singularity and build a Singula
 
     export SINGULARITY_DOCKER_USERNAME=<my_acr_name>
     export SINGULARITY_DOCKER_PASSWORD=<my_acr_password>
+    export PATH=/shared/bin/singularity/bin:$PATH
 
 With these keys the Singularity container can be built:
 
@@ -90,6 +99,7 @@ With these keys the Singularity container can be built:
 
 This creates the “rdma-latest.simg” Singularity image.
 
+To improve security, a dedicates ServicePrincipal can be created with only read rights to the ContainerRegistry. In that case, use the application_id for the USERNAME and the application_secret for the PASSWORD. 
 
 ## Singularity and Cyclecloud
 
